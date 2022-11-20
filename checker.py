@@ -1,4 +1,4 @@
-import httpx, requests, os
+import httpx, requests, os, base64
 import colorama
 from colorama import Fore, init
 from pathlib import Path
