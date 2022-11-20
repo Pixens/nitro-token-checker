@@ -1,4 +1,4 @@
-import httpx, requests
+import httpx, requests, os
 import colorama
 from colorama import Fore, init
 from pathlib import Path
@@ -95,6 +95,18 @@ def find_token(token):
 
     else:
         return token
+    
+def removeToken(token: str, file:str):
+    with open(file, "r") as f:
+        fulltokens = f.read().splitlines()
+        Tokens = []
+        for j in fulltokens:
+            p = find_token(j)
+            Tokens.append(p)
+        for t in Tokens:
+            if len(t) < 5 or t == token:
+                Tokens.remove(t)
+        open(file, "w").write("\n".join(Tokens))
 
 def get_all_tokens(filename):
     all_tokens = []
