@@ -10,6 +10,24 @@ cyan = Fore.CYAN
 def cls(): #clears the terminal
     os.system('cls' if os.name=='nt' else 'clear')
 
+def find_token(token):
+    if ':' in token:
+        token_chosen = None
+        tokensplit = token.split(":")
+        for thing in tokensplit:
+            if '@' not in thing and '.' in thing and len(
+                    thing) > 30: 
+                token_chosen = thing
+                break
+        if token_chosen == None:
+            print(f"Error finding token", Fore.RED)
+            return None
+        else:
+            return token_chosen
+
+
+    else:
+        return token
 
 def get_all_tokens(filename):
     all_tokens = []
